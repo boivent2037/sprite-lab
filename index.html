@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprite Lab — Background remove & spritesheet slicer</title>
+    <meta name="description" content="Remove backgrounds and slice spritesheets in your browser. No upload to server — 100% private." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">✂️</span>
+          <div>
+            <h1>Sprite Lab</h1>
+            <p>Background remove · Spritesheet slicer · Hybrid AI</p>
+          </div>
+        </div>
+        <nav class="tabs" role="tablist">
+          <button type="button" class="tab active" data-tab="remove" role="tab" aria-selected="true">Remove background</button>
+          <button type="button" class="tab" data-tab="slice" role="tab" aria-selected="false">Slice spritesheet</button>
+        </nav>
+      </header>
+
+      <!-- ── Background Remove ── -->
+      <main class="panel remove-panel" id="panel-remove">
+        <aside class="sidebar">
+          <div class="dropzone" id="remove-dropzone" tabindex="0" role="button">
+            <input type="file" id="remove-file" accept="image/*" hidden />
+            <span class="drop-icon">⬆</span>
+            <p class="drop-title">Drop an image</p>
+            <p class="drop-hint">PNG, JPG, WebP · processed locally</p>
+          </div>
+
+          <div class="file-chip" id="remove-file-chip" hidden></div>
+
+          <section class="controls">
+            <div class="auto-note">
+              <span class="auto-note-icon">✦</span>
+              <div>
+                <strong>Automatic removal</strong>
+                <p>Detects magenta, green, checkerboard, or solid backdrops and cleans the edges for you.</p>
+              </div>
+            </div>
+
+            <p class="progress-line hidden" id="remove-progress" aria-live="polite"></p>
+
+            <button type="button" class="btn-primary" id="remove-run" disabled>Remove background</button>
+            <button type="button" class="btn-secondary" id="remove-download" hidden>Download PNG</button>
+          </section>
+        </aside>
+
+        <section class="compare">
+          <div class="preview-card">
+            <div class="preview-tag">Before</div>
+            <div class="checker preview-frame"><img id="remove-before" alt="" hidden /></div>
+            <div class="preview-empty" id="remove-before-empty">Original</div>
+          </div>
+          <div class="preview-card">
+            <div class="preview-tag accent">After</div>
+            <div class="checker preview-frame"><img id="remove-after" alt="" hidden /></div>
+            <div class="preview-empty" id="remove-after-empty">Transparent result</div>
+          </div>
+        </section>
+      </main>
+
+      <!-- ── Spritesheet Slicer ── -->
+      <main class="panel slice-panel hidden" id="panel-slice">
+        <aside class="sidebar">
+          <div class="dropzone" id="slice-dropzone" tabindex="0" role="button">
+            <input type="file" id="slice-file" accept="image/*" hidden />
+            <span class="drop-icon">⬆</span>
+            <p class="drop-title">Drop a spritesheet</p>
+            <p class="drop-hint">We find each frame by scanning pixels</p>
+          </div>
+
+          <div class="file-chip" id="slice-file-chip" hidden></div>
+
+          <div class="detect-card" id="detect-card" hidden>
+            <span class="detect-icon">✓</span>
+            <div>
+              <strong id="detect-label">Scanning pixels…</strong>
+              <p id="detect-detail"></p>
+            </div>
+          </div>
+
+          <section class="controls">
+            <p class="progress-line hidden" id="slice-progress" aria-live="polite"></p>
+
+            <button type="button" class="btn-primary" id="slice-run" disabled>
+              <span class="btn-label">Slice spritesheet</span>
+              <span class="btn-spinner" hidden></span>
+            </button>
+            <button type="button" class="btn-secondary" id="slice-zip" hidden>Download ZIP</button>
+            <p class="field-hint">Frames are detected from pixels — the background is removed automatically.</p>
+          </section>
+        </aside>
+
+        <section class="slice-workspace">
+          <div class="sheet-preview-wrap">
+            <div class="preview-tag">Sheet</div>
+            <div class="checker sheet-preview" id="sheet-preview">
+              <img id="sheet-img" alt="" hidden />
+              <div class="preview-empty" id="sheet-empty">Upload a spritesheet</div>
+            </div>
+          </div>
+
+          <div class="frames-section" id="frames-section" hidden>
+            <div class="frames-header">
+              <span>Frames <small id="frames-count"></small></span>
+              <label class="fps-control">FPS <input type="range" id="anim-fps" min="1" max="24" value="12" /><code id="fps-val">12</code></label>
+            </div>
+            <div class="anim-preview checker" id="anim-preview"></div>
+            <div class="frame-grid" id="frame-grid"></div>
+            <p class="field-hint">Click a frame to exclude it from export.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>All processing happens in your browser — nothing is uploaded</span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

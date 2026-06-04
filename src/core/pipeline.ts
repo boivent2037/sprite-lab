@@ -1,21 +1,33 @@
 import { analyzeBackgroundFromRgba } from './analyzeBackground';
 import { cloneRgba, chromaKeyInPlace, GREEN_KEY } from './chromaKey';
-import { floodFillRemoveBackground } from './floodFill';
+import { floodFillRemoveBackground, removeNeutralIslandsInPlace } from './floodFill';
 import { removeCheckerboardFromRgba, defringeRgba } from './checkerboard';
 import { refineEdgeMatteInPlace } from './edgeMatte';
 import { extractFramesSmart } from './frameExtract';
 import { isMostlyTransparent, opaqueFraction } from './opaque';
 
-/** Flood-fill the backdrop, then matte + decontaminate the silhouette halo. */
+/**
+ * Flood-fill the backdrop, then gently clean the silhouette halo.
+ *
+ * The flood already stops cleanly at the subject outline, so we only need to
+ * decontaminate the thin anti-aliased rim. The matte runs with a HIGH contrast
+ * floor (minContrast 200) and a tiny window so it ONLY touches pixels where the
+ * foreground and backdrop are strongly different — e.g. dark hair against a
+ * white studio backdrop. Light subjects (skin, white clothing) sit close to a
+ * light backdrop, fall below the floor, and are left fully intact. This is what
+ * prevents the previous "eaten edges" where skin and trim were peeled away.
+ */
 function floodFillMatte(img: RgbaImage): RgbaImage {
   const keyed = floodFillRemoveBackground(img);
+  // Clear leftover checker-tile speckles (a 2nd backdrop tone the single-color
+  // flood couldn't reach) before matting the silhouette.
+  removeNeutralIslandsInPlace(keyed.data, keyed.width, keyed.height);
   refineEdgeMatteInPlace(keyed.data, keyed.width, keyed.height, {
-    radius: 2,
-    passes: 5,
-    minContrast: 55,
+    radius: 1,
+    passes: 2,
+    minContrast: 200,
   });
-  refineEdgeMatteInPlace(keyed.data, keyed.width, keyed.height, { radius: 1, passes: 1 });
-  return defringeRgba(keyed, 2);
+  return defringeRgba(keyed, 1);
 }
 import type {
   BackgroundAnalysis,

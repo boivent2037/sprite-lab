@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "test:pipeline": "tsx scripts/test-pipeline.ts",
     "test:checkerboard": "tsx scripts/test-checkerboard.ts",
-    "test:halo": "tsx scripts/test-halo.ts"
+    "test:halo": "tsx scripts/test-halo.ts",
+    "test:white": "tsx scripts/test-white-subject.ts",
+    "test:light-checker": "tsx scripts/test-light-checker.ts"
   },
   "dependencies": {
     "jszip": "^3.10.1"

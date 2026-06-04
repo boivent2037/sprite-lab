@@ -158,20 +158,15 @@ export function floodFillRemoveBackground(
  * grey tiles just outside tolerance can survive — either floating free in the
  * transparent area, or fused to a sprite through its dark outline.
  *
- * Components are grown over ALL opaque pixels (any color). A component is
- * deleted only when it is BOTH small AND made entirely of neutral-light pixels
- * — i.e. a checker tile floating free in the removed backdrop, not connected
- * through any opaque pixel to a larger mass.
- *
- * This is deliberately conservative so it can NEVER eat part of the character:
- *  - the subject is one large component (a white dress, or a sprite + its body)
- *    far above the size cap;
- *  - any grey shading on the subject (e.g. a frilly sock's folds) is connected
- *    through the body's opaque pixels into that large component, and the
- *    component also contains non-neutral (warm/dark) pixels, so it fails the
- *    all-neutral test twice over.
- * The trade-off: a stray tile fused to a sprite's outline survives, but that is
- * far better than ever deleting real art.
+ * Components are grown over NEUTRAL-LIGHT opaque pixels only, so a sprite's
+ * dark line-art breaks the link between a stray grey tile and the character.
+ * A neutral component is deleted only when it is BOTH small AND mostly ringed
+ * by transparency (i.e. floating in the removed backdrop). That keeps real
+ * subject features safe:
+ *  - a white dress is one huge neutral region, far above the size cap;
+ *  - white cuffs / eyes are encircled by opaque body pixels, so their
+ *    transparent-border fraction is low.
+ * Warm art (skin, wood, cloth) fails the neutral test outright.
  */
 export function removeNeutralIslandsInPlace(
   data: Uint8ClampedArray,
@@ -180,10 +175,10 @@ export function removeNeutralIslandsInPlace(
 ): void {
   const n = w * h;
   const maxIslandArea = Math.max(256, Math.round(n * 0.0015));
-
-  const isOpaque = (idx: number): boolean => data[idx * 4 + 3] >= 16;
+  const minVoidBorder = 0.5;
   const isNeutralLight = (idx: number): boolean => {
     const i = idx * 4;
+    if (data[i + 3] < 16) return false;
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
@@ -194,7 +189,7 @@ export function removeNeutralIslandsInPlace(
   const stack: number[] = [];
   for (let start = 0; start < n; start++) {
     if (visited[start]) continue;
-    if (!isOpaque(start)) {
+    if (!isNeutralLight(start)) {
       visited[start] = 1;
       continue;
     }
@@ -202,12 +197,12 @@ export function removeNeutralIslandsInPlace(
     stack.push(start);
     visited[start] = 1;
     const comp: number[] = [];
-    let allNeutral = true;
+    let voidBorder = 0;
+    let solidBorder = 0;
     let tooBig = false;
     while (stack.length) {
       const idx = stack.pop() as number;
       comp.push(idx);
-      if (!isNeutralLight(idx)) allNeutral = false;
       if (comp.length > maxIslandArea) tooBig = true;
       const x = idx % w;
       const y = (idx / w) | 0;
@@ -219,12 +214,24 @@ export function removeNeutralIslandsInPlace(
       ];
       for (let k = 0; k < 4; k++) {
         const nb = nbs[k];
-        if (nb < 0 || visited[nb] || !isOpaque(nb)) continue;
-        visited[nb] = 1;
-        stack.push(nb);
+        if (nb < 0) {
+          voidBorder++; // sheet edge reads as background
+          continue;
+        }
+        if (isNeutralLight(nb)) {
+          if (!visited[nb]) {
+            visited[nb] = 1;
+            stack.push(nb);
+          }
+          continue;
+        }
+        // Non-neutral neighbor: transparent = void, opaque = real subject.
+        if (data[nb * 4 + 3] < 16) voidBorder++;
+        else solidBorder++;
       }
     }
-    if (allNeutral && !tooBig) {
+    const border = voidBorder + solidBorder;
+    if (!tooBig && border > 0 && voidBorder / border >= minVoidBorder) {
       for (const idx of comp) data[idx * 4 + 3] = 0;
     }
   }

